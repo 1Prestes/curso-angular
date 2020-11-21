@@ -1,6 +1,10 @@
+import { AlertaComponent } from "./../../shared/components/alerta/alerta.component";
+import { FilmesService } from "./../../core/filmes.service";
+import { Filme } from "./../../shared/models/filme";
 import { ValidarCamposService } from "./../../shared/components/campos/validar-campos.service";
 import { Component, OnInit } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
+import { MatDialog } from "@angular/material";
 
 @Component({
   selector: "dio-cadastro-filmes",
@@ -13,7 +17,9 @@ export class CadastroFilmesComponent implements OnInit {
 
   constructor(
     public validacao: ValidarCamposService,
-    private fb: FormBuilder
+    public dialog: MatDialog,
+    private fb: FormBuilder,
+    private filmeService: FilmesService
   ) {}
 
   get f() {
@@ -34,7 +40,7 @@ export class CadastroFilmesComponent implements OnInit {
       dtLancamento: ["", [Validators.required]],
       descricao: [""],
       nota: [0, [Validators.required, Validators.min(0), Validators.max(10)]],
-      urlIMDB: ["", [Validators.minLength(10)]],
+      urlIMDb: ["", [Validators.minLength(10)]],
       genero: ["", [Validators.required]],
     });
 
@@ -49,16 +55,29 @@ export class CadastroFilmesComponent implements OnInit {
     ];
   }
 
-  salvar(): void {
+  submit(): void {
     this.cadastro.markAllAsTouched();
     if (this.cadastro.invalid) {
       return;
     }
 
-    alert("SUCCESS!\n\n" + JSON.stringify(this.cadastro.value, null, 4));
+    const filme = this.cadastro.getRawValue() as Filme;
+    this.salvar(filme);
   }
 
   reiniciarForm(): void {
     this.cadastro.reset();
+  }
+
+  private salvar(filme: Filme): void {
+    this.filmeService.salvar(filme).subscribe(
+      () => {
+        const dialogRef = this.dialog.open(AlertaComponent);
+        this.reiniciarForm();
+      },
+      () => {
+        alert("Erro ao salvar");
+      }
+    );
   }
 }
