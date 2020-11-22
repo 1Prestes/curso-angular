@@ -1,10 +1,13 @@
-import { AlertaComponent } from "./../../shared/components/alerta/alerta.component";
-import { FilmesService } from "./../../core/filmes.service";
-import { Filme } from "./../../shared/models/filme";
-import { ValidarCamposService } from "./../../shared/components/campos/validar-campos.service";
 import { Component, OnInit } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { MatDialog } from "@angular/material";
+import { Router } from "@angular/router";
+
+import { Filme } from "./../../shared/models/filme";
+import { Alerta } from "./../../shared/models/alerta";
+import { FilmesService } from "./../../core/filmes.service";
+import { AlertaComponent } from "./../../shared/components/alerta/alerta.component";
+import { ValidarCamposService } from "./../../shared/components/campos/validar-campos.service";
 
 @Component({
   selector: "dio-cadastro-filmes",
@@ -19,7 +22,8 @@ export class CadastroFilmesComponent implements OnInit {
     public validacao: ValidarCamposService,
     public dialog: MatDialog,
     private fb: FormBuilder,
-    private filmeService: FilmesService
+    private filmeService: FilmesService,
+    private router: Router
   ) {}
 
   get f() {
@@ -72,11 +76,34 @@ export class CadastroFilmesComponent implements OnInit {
   private salvar(filme: Filme): void {
     this.filmeService.salvar(filme).subscribe(
       () => {
-        const dialogRef = this.dialog.open(AlertaComponent);
-        this.reiniciarForm();
+        const config = {
+          data: {
+            btnSucesso: "Ir para listagem",
+            btnCancelar: "Cadastrar um novo filme",
+            possuiBtnFechar: true,
+            corBtnCancelar: "primary",
+          } as Alerta,
+        };
+        const dialogRef = this.dialog.open(AlertaComponent, config);
+        dialogRef.afterClosed().subscribe((opcao: boolean) => {
+          if (opcao) {
+            this.router.navigateByUrl("filmes");
+          } else {
+            this.reiniciarForm();
+          }
+        });
       },
       () => {
-        alert("Erro ao salvar");
+        const config = {
+          data: {
+            titulo: "Erro ao salvar o registro!",
+            descricao:
+              "Erro ao tentar salvar o seu registro, favor tentar novamente ou caso o erro persista, entrar em contato com nosso suporte.",
+            corBtnSucesso: "warn",
+            btnSucesso: "Fechar",
+          } as Alerta,
+        };
+        this.dialog.open(AlertaComponent, config);
       }
     );
   }

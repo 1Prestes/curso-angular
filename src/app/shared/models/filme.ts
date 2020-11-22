@@ -1,6 +1,6 @@
 export interface Filme {
   id?: number;
-  title: string;
+  titulo: string;
   urlFoto?: string;
   dtLancamento: Date;
   descricao?: string;
